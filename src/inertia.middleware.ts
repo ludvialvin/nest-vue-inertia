@@ -6,6 +6,12 @@ import type { Request, Response, NextFunction } from 'express';
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
+    interface User {
+      id: number;
+      email?: string;
+      name?: string;
+      role?: string;
+    }
     interface Response {
       inertia: { render: InertiaRender };
     }
@@ -15,7 +21,7 @@ declare global {
 type InertiaRender = (
   component: string,
   props?: Record<string, any>,
-  options?: { return?: boolean },
+  options?: { return?: boolean; statusCode?: number },
 ) => Promise<void | string | null>;
 
 const VIEW_NAME = 'index';
@@ -35,7 +41,7 @@ class InertiaExpress extends Inertia {
   async render(
     component: string,
     props?: Record<string, any>,
-    _options?: { return?: boolean },
+    options?: { return?: boolean; statusCode?: number },
   ): Promise<void | string | null> {
     const { statusCode, headers, data, isInertia } = await this.getReponseData({
       component,
@@ -47,7 +53,7 @@ class InertiaExpress extends Inertia {
         this.res.setHeader(key, value);
       }
     }
-    this.res.status(statusCode);
+    this.res.status(options?.statusCode ?? statusCode);
 
     if (isInertia) {
       this.res.send(data);

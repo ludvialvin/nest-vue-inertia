@@ -5,6 +5,7 @@ import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 import compression from 'compression';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import type { CorsOptions } from 'cors';
 import { json, urlencoded } from 'express';
 import { join } from 'node:path';
@@ -48,6 +49,7 @@ async function bootstrap() {
   );
   app.use(json({ limit: '1mb' }));
   app.use(urlencoded({ extended: true, limit: '1mb' }));
+  app.use(cookieParser());
 
   app.use(
     '/api',
@@ -104,10 +106,11 @@ function buildCspDirectives({
     styleSrc: [
       "'self'",
       "'unsafe-inline'",
+      'https://fonts.googleapis.com',
       ...(isProd ? [] : frontendUrl ? [frontendUrl] : []),
     ],
     imgSrc: ["'self'", 'data:'],
-    fontSrc: ["'self'", 'data:'],
+    fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
     connectSrc: ["'self'", 'data:', ...devSources],
     objectSrc: ["'none'"],
     baseUri: ["'self'"],

@@ -28,6 +28,15 @@ services:
       # Rate limiting global (ttl dalam milidetik)
       THROTTLE_TTL: ${THROTTLE_TTL:-60000}
       THROTTLE_LIMIT: ${THROTTLE_LIMIT:-100}
+      # SSO / OAuth2 (Authorization Code + PKCE)
+      SSO_BASE_URL: ${SSO_BASE_URL:-http://localhost:8000}
+      SSO_CLIENT_ID: ${SSO_CLIENT_ID:-}
+      SSO_CLIENT_SECRET: ${SSO_CLIENT_SECRET:-}
+      SSO_REDIRECT_URI: ${SSO_REDIRECT_URI:-http://localhost:3000/auth/callback}
+      # JWT lokal untuk sesi (WAJIB ganti di produksi)
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      AUTH_COOKIE_NAME: ${AUTH_COOKIE_NAME:-token}
       TZ: ${TZ:-UTC}
     # Alternatif: baca dari file env (mis. .env.production host)
     # env_file:

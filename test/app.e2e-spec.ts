@@ -18,41 +18,54 @@ describe('AppController (e2e)', () => {
     await app.init();
   });
 
-  it('/ (GET) returns the full page shell', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Content-Type', /html/)
-      .then((res) => {
-        expect(res.text).toContain('type="application/json" data-page="app"');
-        expect(res.text).toContain('"component":"Dashboard"');
-      });
+  afterEach(async () => {
+    await app.close();
   });
 
-  it('/ (GET) returns JSON for Inertia requests', () => {
-    return request(app.getHttpServer())
+  it('/ (GET) redirects to /auth/login when unauthenticated', async () => {
+    await request(app.getHttpServer())
+      .get('/')
+      .expect(302)
+      .expect('Location', /\/auth\/login/);
+  });
+
+  it('/ (GET) returns 409 + X-Inertia-Location when unauthenticated & Inertia', async () => {
+    await request(app.getHttpServer())
       .get('/')
       .set('X-Inertia', 'true')
+      .expect(409)
+      .expect('X-Inertia-Location', '/auth/login');
+  });
+
+  it('/auth/login (GET) redirects to the SSO /oauth/authorize endpoint', async () => {
+    await request(app.getHttpServer())
+      .get('/auth/login')
+      .expect(302)
+      .expect(
+        'Location',
+        /http:\/\/localhost:8000\/oauth\/authorize\?.*code_challenge=/,
+      );
+  });
+
+  it('/auth/login (GET) sets PKCE state cookies', async () => {
+    const res = await request(app.getHttpServer()).get('/auth/login');
+    expect(res.headers['set-cookie']).toBeDefined();
+
+    const setCookie = Array.isArray(res.headers['set-cookie'])
+      ? res.headers['set-cookie'].join('; ')
+      : String(res.headers['set-cookie']);
+    expect(setCookie).toMatch(/oauth_state=/);
+    expect(setCookie).toMatch(/oauth_verifier=/);
+  });
+
+  it('/api/health (GET) is public', async () => {
+    await request(app.getHttpServer())
+      .get('/api/health')
       .expect(200)
       .expect('Content-Type', /json/)
       .then((res) => {
-        const body = res.body as {
-          version: string;
-          component: string;
-          props: { title: string; user: { name: string; email: string } };
-          url: string;
-        };
-        expect(typeof body.version).toBe('string');
-        expect(body.component).toBe('Dashboard');
-        expect(body.props).toEqual({
-          title: 'Dashboard',
-          user: { name: 'John Doe', email: 'john@example.com' },
-        });
-        expect(body.url).toBe('/');
+        const body = res.body as { status: string };
+        expect(body.status).toBe('ok');
       });
-  });
-
-  afterEach(async () => {
-    await app.close();
   });
 });

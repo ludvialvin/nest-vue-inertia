@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import type { Request, Response } from 'express';
 import { AppController } from './web/app.controller';
-import { AppService } from './web/app.service';
 
 describe('AppController', () => {
   let appController: AppController;
@@ -8,25 +8,37 @@ describe('AppController', () => {
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
       controllers: [AppController],
-      providers: [AppService],
     }).compile();
 
     appController = app.get<AppController>(AppController);
   });
 
   describe('dashboard', () => {
-    it('should render the Dashboard page via Inertia', async () => {
+    it('should render the Dashboard page with the authenticated user', async () => {
       const render = jest.fn();
+      const req = {
+        user: {
+          id: 1,
+          name: 'Budi Santoso',
+          email: 'budi@example.com',
+          role: 'admin',
+        },
+      } as unknown as Request;
       const res = {
         inertia: { render },
-      } as unknown as import('express').Response;
+      } as unknown as Response;
 
-      const result = await appController.dashboard(res);
+      const result = await appController.dashboard(req, res);
 
       expect(result).toBeUndefined();
       expect(render).toHaveBeenCalledWith('Dashboard', {
         title: 'Dashboard',
-        user: { name: 'John Doe', email: 'john@example.com' },
+        user: {
+          id: 1,
+          name: 'Budi Santoso',
+          email: 'budi@example.com',
+          role: 'admin',
+        },
       });
     });
   });
