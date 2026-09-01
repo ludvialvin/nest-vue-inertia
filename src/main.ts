@@ -4,6 +4,8 @@ import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 import compression from 'compression';
+import cors from 'cors';
+import type { CorsOptions } from 'cors';
 import { json, urlencoded } from 'express';
 import { join } from 'node:path';
 import { Inertia } from '@inertify/core';
@@ -46,30 +48,19 @@ async function bootstrap() {
   );
   app.use(json({ limit: '1mb' }));
   app.use(urlencoded({ extended: true, limit: '1mb' }));
+
+  app.use(
+    '/api',
+    cors(
+      buildCorsOptions(config.get<string>('CORS_ORIGINS', ''), [
+        appUrl,
+        frontendUrl,
+      ]),
+    ),
+  );
+
   app.use(inertiaMiddleware);
   app.useStaticAssets(join(process.cwd(), 'public'), { index: false });
-
-  app.enableCors({
-    origin: frontendUrl ? [frontendUrl, appUrl] : [appUrl],
-    credentials: true,
-    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-    allowedHeaders: [
-      'Content-Type',
-      'X-Requested-With',
-      'X-Inertia',
-      'X-Inertia-Version',
-      'X-Inertia-Location',
-      'X-Inertia-Partial-Component',
-      'X-Inertia-Partial-Data',
-    ],
-    exposedHeaders: [
-      'X-Inertia',
-      'X-Inertia-Version',
-      'X-Inertia-Location',
-      'X-Inertia-Partial-Component',
-    ],
-    maxAge: 86400,
-  });
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -134,6 +125,47 @@ function parseTrustProxy(
   if (value === 'false') return false;
   if (/^\d+$/.test(value)) return Number(value);
   return value;
+}
+
+function buildCorsOptions(
+  rawOrigins: string,
+  extraOrigins: string[],
+): CorsOptions {
+  const origins = new Set([
+    ...rawOrigins
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter((origin) => /^https?:\/\//.test(origin)),
+    ...extraOrigins.filter(Boolean),
+  ]);
+
+  return {
+    origin: (origin, callback) => {
+      if (!origin || origins.has(origin)) {
+        callback(null, true);
+        return;
+      }
+      callback(null, false);
+    },
+    credentials: true,
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [
+      'Content-Type',
+      'X-Requested-With',
+      'X-Inertia',
+      'X-Inertia-Version',
+      'X-Inertia-Location',
+      'X-Inertia-Partial-Component',
+      'X-Inertia-Partial-Data',
+    ],
+    exposedHeaders: [
+      'X-Inertia',
+      'X-Inertia-Version',
+      'X-Inertia-Location',
+      'X-Inertia-Partial-Component',
+    ],
+    maxAge: 86400,
+  };
 }
 
 void bootstrap();
