@@ -1,0 +1,38 @@
+# Version control
+.git
+.gitignore
+
+# Dependencies
+**/node_modules
+
+# Build output
+dist
+**/dist
+public
+**/.vite
+coverage
+**/*.tsbuildinfo
+
+# Test
+test
+**/*.spec.ts
+**/*.e2e-spec.ts
+
+# Environment & secrets (jangan pernah di-bake ke image; set via docker-compose)
+.env
+.env.*
+
+# Docker sendiri
+Dockerfile
+.dockerignore
+docker-compose.yml
+docker-compose.*.yml
+
+# Docs & IDE
+docs
+*.md
+.vscode
+.idea
+*.log
+npm-debug.log*
+pnpm-debug.log*

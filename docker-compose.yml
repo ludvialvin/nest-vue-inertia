@@ -1,0 +1,35 @@
+services:
+  nestjsvue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nestjsvue:latest
+    container_name: nestjsvue
+    restart: unless-stopped
+    # Jalankan PID 1 sebagai init (handle zombie) & matikan proses Node dengan benar
+    init: true
+    ports:
+      # Binds loopback saja; akses publik disarankan lewat reverse proxy (nginx/caddy).
+      # Untuk expose langsung, ganti menjadi "3000:3000".
+      - "127.0.0.1:3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      # Ganti sesuai domain produksi anda (nilai default berasal dari file .env host jika ada)
+      APP_URL: ${APP_URL:-https://example.com}
+      # Kosongkan jika frontend sama-origin dengan API
+      FRONTEND_URL: ${FRONTEND_URL:-}
+      # Subdomain lain yang boleh mengakses /api (comma-separated)
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      # Bump saat asset frontend berubah agar Inertia memaksa reload asset
+      INERTIA_VERSION: ${INERTIA_VERSION:-prod-1}
+      # Percayai X-Forwarded-For dari reverse proxy (untuk IP asli di rate limit)
+      TRUST_PROXY: ${TRUST_PROXY:-1}
+      # Rate limiting global (ttl dalam milidetik)
+      THROTTLE_TTL: ${THROTTLE_TTL:-60000}
+      THROTTLE_LIMIT: ${THROTTLE_LIMIT:-100}
+      TZ: ${TZ:-UTC}
+    # Alternatif: baca dari file env (mis. .env.production host)
+    # env_file:
+    #   - .env.production
+    # healthcheck memakai HEALTHCHECK bawaan dari Dockerfile (GET /api/health)
