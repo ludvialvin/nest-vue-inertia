@@ -6,63 +6,80 @@ defineProps<{
   user: {
     name: string;
     email: string;
+    role?: string;
   };
 }>();
+
+const stats = [
+  { label: 'Total Pengguna', value: '128', trend: '+12%', trendUp: true },
+  { label: 'Order Hari Ini', value: '42', trend: '+8%', trendUp: true },
+  { label: 'Pendapatan Bulan Ini', value: 'Rp 3,2 jt', trend: '-2%', trendUp: false },
+];
+
+const profiles = [
+  { id: 1, name: 'Budi Santoso', role: 'Admin' },
+  { id: 2, name: 'Siti Aminah', role: 'Editor' },
+  { id: 99, name: 'Tidak ada', role: '—' },
+];
 </script>
 
 <template>
   <div>
-    <h2 class="text-2xl font-bold text-gray-900">{{ title }}</h2>
-    <p class="mt-1 text-sm text-gray-600">
-      Selamat datang di dashboard. Anda masuk sebagai
-      <span class="font-medium text-gray-900">{{ user.name }}</span>
-      ({{ user.email }}).
-    </p>
+    <div class="flex flex-col gap-1">
+      <h2 class="text-2xl font-bold tracking-tight text-slate-900">{{ title }}</h2>
+      <p class="text-sm text-slate-500">
+        Selamat datang kembali,
+        <span class="font-semibold text-brand-700">{{ user.name }}</span> ({{
+          user.email
+        }}) — role <span class="font-semibold text-brand-700 capitalize">{{ user.role }}</span>.
+      </p>
+    </div>
 
     <div class="mt-6 grid gap-4 sm:grid-cols-3">
-      <div class="rounded-lg bg-white p-6 shadow">
-        <p class="text-sm font-medium text-gray-500">Total Pengguna</p>
-        <p class="mt-2 text-3xl font-bold text-gray-900">128</p>
-      </div>
-      <div class="rounded-lg bg-white p-6 shadow">
-        <p class="text-sm font-medium text-gray-500">Order Hari Ini</p>
-        <p class="mt-2 text-3xl font-bold text-gray-900">42</p>
-      </div>
-      <div class="rounded-lg bg-white p-6 shadow">
-        <p class="text-sm font-medium text-gray-500">Pendapatan</p>
-        <p class="mt-2 text-3xl font-bold text-gray-900">Rp 3.2jt</p>
+      <div
+        v-for="s in stats"
+        :key="s.label"
+        class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+      >
+        <p class="text-sm font-medium text-slate-500">{{ s.label }}</p>
+        <div class="mt-2 flex items-end justify-between">
+          <p class="text-3xl font-bold tracking-tight text-slate-900">{{ s.value }}</p>
+          <span
+            class="rounded-full px-2 py-1 text-xs font-semibold"
+            :class="s.trendUp ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'"
+          >
+            {{ s.trend }}
+          </span>
+        </div>
       </div>
     </div>
 
-    <div class="mt-10">
-      <h3 class="text-lg font-semibold text-gray-900">Contoh Dynamic Route</h3>
-      <p class="mt-1 text-sm text-gray-600">
-        Klik salah satu user untuk membuka halaman dynamic route
-        <code class="rounded bg-gray-200 px-1 py-0.5 text-xs">/users/:id</code>.
+    <div class="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <h3 class="text-lg font-semibold text-slate-900">Contoh Dynamic Route</h3>
+      <p class="mt-1 text-sm text-slate-500">
+        Klik salah satu profil untuk membuka halaman
+        <code class="rounded-md bg-brand-50 px-1.5 py-0.5 text-xs font-medium text-brand-700"
+          >/users/:id</code
+        >.
       </p>
-      <ul class="mt-4 space-y-2">
-        <li>
+      <ul class="mt-4 divide-y divide-slate-100">
+        <li v-for="p in profiles" :key="p.id">
           <Link
-            href="/users/1"
-            class="text-sm font-medium text-indigo-600 hover:text-indigo-800"
+            :href="`/users/${p.id}`"
+            class="flex items-center justify-between rounded-lg px-3 py-3 transition hover:bg-brand-50"
           >
-            /users/1 — Budi Santoso
-          </Link>
-        </li>
-        <li>
-          <Link
-            href="/users/2"
-            class="text-sm font-medium text-indigo-600 hover:text-indigo-800"
-          >
-            /users/2 — Siti Aminah
-          </Link>
-        </li>
-        <li>
-          <Link
-            href="/users/99"
-            class="text-sm font-medium text-indigo-600 hover:text-indigo-800"
-          >
-            /users/99 — not found
+            <div class="flex items-center gap-3">
+              <div
+                class="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-brand-500 to-accent-500 text-xs font-bold text-white"
+              >
+                {{ p.name.charAt(0).toUpperCase() }}
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-slate-800">{{ p.name }}</p>
+                <p class="text-xs text-slate-500">{{ p.role }}</p>
+              </div>
+            </div>
+            <span class="text-xs font-medium text-brand-600">/users/{{ p.id }} →</span>
           </Link>
         </li>
       </ul>

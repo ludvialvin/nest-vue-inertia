@@ -1,5 +1,4 @@
 import { Controller, Get, Param, ParseIntPipe, Req, Res } from '@nestjs/common';
-import { AppService } from './app.service';
 import type { Request, Response } from 'express';
 
 interface User {
@@ -11,18 +10,20 @@ interface User {
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
-
   @Get()
-  dashboard(@Res() res: Response) {
+  dashboard(@Req() req: Request, @Res() res: Response) {
     return res.inertia.render('Dashboard', {
       title: 'Dashboard',
-      user: { name: 'John Doe', email: 'john@example.com' },
+      user: req.user,
     });
   }
 
   @Get('users/:id')
-  async user(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
+  user(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
     const users: User[] = [
       {
         id: '1',
@@ -48,16 +49,17 @@ export class AppController {
 
     if (!user) {
       return res.inertia.render('Users/Show', {
+        user: req.user,
         notFound: true,
       });
     }
 
-    return res.inertia.render('Users/Show', { user });
+    return res.inertia.render('Users/Show', { user: req.user, profile: user });
   }
 
   @Get('not-found')
-  notFoundPage(@Res() res: Response) {
-    return res.inertia.render('NotFound', {});
+  notFoundPage(@Req() req: Request, @Res() res: Response) {
+    return res.inertia.render('NotFound', { user: req.user });
   }
 
   @Get('{*splat}')

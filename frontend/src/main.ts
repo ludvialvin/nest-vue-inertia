@@ -1,6 +1,7 @@
 import { createInertiaApp } from '@inertiajs/vue3';
 import { createApp, h, type DefineComponent } from 'vue';
 import AppLayout from './Layouts/AppLayout.vue';
+import './style.css';
 
 const appName = 'NestJS + Inertia';
 
@@ -16,7 +17,8 @@ createInertiaApp({
       throw new Error(`Page not found: ${name}`);
     }
 
-    page.default.layout = page.default.layout ?? ((app: any) => h(AppLayout, {}, () => app));
+    page.default.layout =
+      page.default.layout === undefined ? ((app: any) => h(AppLayout, {}, () => app)) : page.default.layout;
     return page;
   },
   setup({ el, App, props, plugin }) {

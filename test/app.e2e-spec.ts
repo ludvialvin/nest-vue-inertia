@@ -18,20 +18,39 @@ describe('AppController (e2e)', () => {
     await app.init();
   });
 
-  it('/ (GET) returns the full page shell', () => {
-    return request(app.getHttpServer())
+  afterEach(async () => {
+    await app.close();
+  });
+
+  it('/ (GET) redirects to /login when unauthenticated', async () => {
+    await request(app.getHttpServer())
       .get('/')
+      .expect(302)
+      .expect('Location', /\/login/);
+  });
+
+  it('/ (GET) returns 409 + X-Inertia-Location when unauthenticated & Inertia', async () => {
+    await request(app.getHttpServer())
+      .get('/')
+      .set('X-Inertia', 'true')
+      .expect(409)
+      .expect('X-Inertia-Location', '/login');
+  });
+
+  it('/login (GET) returns the full page shell', async () => {
+    await request(app.getHttpServer())
+      .get('/login')
       .expect(200)
       .expect('Content-Type', /html/)
       .then((res) => {
         expect(res.text).toContain('type="application/json" data-page="app"');
-        expect(res.text).toContain('"component":"Dashboard"');
+        expect(res.text).toContain('"component":"Login"');
       });
   });
 
-  it('/ (GET) returns JSON for Inertia requests', () => {
-    return request(app.getHttpServer())
-      .get('/')
+  it('/login (GET) returns JSON for Inertia requests', async () => {
+    await request(app.getHttpServer())
+      .get('/login')
       .set('X-Inertia', 'true')
       .expect(200)
       .expect('Content-Type', /json/)
@@ -39,20 +58,26 @@ describe('AppController (e2e)', () => {
         const body = res.body as {
           version: string;
           component: string;
-          props: { title: string; user: { name: string; email: string } };
+          props: { errors: Record<string, unknown> };
           url: string;
         };
         expect(typeof body.version).toBe('string');
-        expect(body.component).toBe('Dashboard');
-        expect(body.props).toEqual({
-          title: 'Dashboard',
-          user: { name: 'John Doe', email: 'john@example.com' },
-        });
-        expect(body.url).toBe('/');
+        expect(body.component).toBe('Login');
+        expect(body.props.errors).toEqual({});
+        expect(body.url).toBe('/login');
       });
   });
 
-  afterEach(async () => {
-    await app.close();
+  it('/login (POST) returns 422 with errors for empty credentials', async () => {
+    await request(app.getHttpServer())
+      .post('/login')
+      .set('X-Inertia', 'true')
+      .send({ email: '', password: '' })
+      .expect(422)
+      .then((res) => {
+        const body = res.body as { props: { errors: Record<string, string> } };
+        expect(body.props.errors.email).toBeDefined();
+        expect(body.props.errors.email).toContain('wajib diisi');
+      });
   });
 });

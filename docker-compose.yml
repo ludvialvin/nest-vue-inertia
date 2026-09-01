@@ -28,6 +28,23 @@ services:
       # Rate limiting global (ttl dalam milidetik)
       THROTTLE_TTL: ${THROTTLE_TTL:-60000}
       THROTTLE_LIMIT: ${THROTTLE_LIMIT:-100}
+      # MySQL: contoh ini menggunakan DB di host (port 3306 di localhost).
+      # Dari dalam container, gunakan host.docker.internal bila MySQL di-host host.
+      DB_HOST: ${DB_HOST:-host.docker.internal}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_USERNAME: ${DB_USERNAME:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-mysql}
+      DB_DATABASE: ${DB_DATABASE:-nestjsvue}
+      DB_LOGGING: ${DB_LOGGING:-false}
+      # JWT: WAJIB ganti secret di produksi
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      JWT_EXPIRES_IN_MS: ${JWT_EXPIRES_IN_MS:-604800000}
+      AUTH_COOKIE_NAME: ${AUTH_COOKIE_NAME:-token}
+      # Admin awal yang di-seed saat tabel user kosong
+      DEFAULT_ADMIN_NAME: ${DEFAULT_ADMIN_NAME:-Administrator}
+      DEFAULT_ADMIN_EMAIL: ${DEFAULT_ADMIN_EMAIL:-admin@example.com}
+      DEFAULT_ADMIN_PASSWORD: ${DEFAULT_ADMIN_PASSWORD:-admin123}
       TZ: ${TZ:-UTC}
     # Alternatif: baca dari file env (mis. .env.production host)
     # env_file:
