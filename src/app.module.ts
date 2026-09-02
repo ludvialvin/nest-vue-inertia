@@ -6,6 +6,7 @@ import { ApiModule } from './api/api.module';
 import { WebModule } from './web/web.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import { TypeOrmDBModule } from './database/typeorm.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { JwtAuthGuard } from './auth/jwt-auth.guard';
         },
       ],
     }),
+    TypeOrmDBModule,
     ApiModule,
     AuthModule,
     WebModule,
