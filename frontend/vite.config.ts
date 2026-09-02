@@ -1,6 +1,7 @@
 import { defineConfig, loadEnv } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import tailwindcss from '@tailwindcss/vite';
+import ui from '@nuxt/ui/vite';
 import { fileURLToPath, URL } from 'node:url';
 
 export default defineConfig(({ mode }) => {
@@ -9,7 +10,35 @@ export default defineConfig(({ mode }) => {
   const nestUrl = env.NEST_URL ?? 'http://localhost:3000';
 
   return {
-    plugins: [vue(), tailwindcss()],
+    plugins: [
+      vue(),
+      tailwindcss(),
+      ui({
+        router: 'inertia',
+        ui: {
+          colors: {
+            primary: 'brand',
+            neutral: 'slate',
+          },
+        },
+        icon: {
+          clientBundle: {
+            scan: true,
+            icons: [
+              'lucide:layout-dashboard',
+              'lucide:log-out',
+              'lucide:x',
+              'lucide:arrow-up-right',
+              'lucide:user',
+              'simple-icons:github',
+            ],
+          },
+        },
+        experimental: {
+          componentDetection: true,
+        },
+      }),
+    ],
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),

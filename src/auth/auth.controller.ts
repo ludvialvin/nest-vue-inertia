@@ -85,8 +85,7 @@ export class AuthController {
   ssoLogout(@Res() res: Response) {
     const cookieName = process.env.AUTH_COOKIE_NAME ?? 'token';
     res.clearCookie(cookieName, { path: '/' });
-    const baseUrl = process.env.SSO_BASE_URL ?? 'http://localhost:8000';
-    res.redirect(`${baseUrl}/logout`);
+    res.redirect(this.sso.logoutUrl);
   }
 
   @Get('me')

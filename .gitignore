@@ -3,6 +3,13 @@
 /node_modules
 /build
 /public/assets/**
+/public/favicon.ico
+
+# auto-generated type declarations (Nuxt UI)
+/auto-imports.d.ts
+/components.d.ts
+/frontend/auto-imports.d.ts
+/frontend/components.d.ts
 
 # Logs
 logs

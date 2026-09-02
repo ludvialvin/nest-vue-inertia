@@ -57,9 +57,8 @@ export class SsoService {
   private readonly meUrl: string;
 
   constructor(private readonly config: ConfigService) {
-    this.baseUrl = this.config.get<string>(
-      'SSO_BASE_URL',
-      'http://localhost:8000',
+    this.baseUrl = this.devHttp(
+      this.config.get<string>('SSO_BASE_URL', 'http://localhost:8000'),
     );
     this.clientId = this.config.get<string>('SSO_CLIENT_ID', '');
     this.clientSecret = this.config.get<string>('SSO_CLIENT_SECRET', '');
@@ -70,6 +69,20 @@ export class SsoService {
     this.authUrl = `${this.baseUrl}/oauth/authorize`;
     this.tokenUrl = `${this.baseUrl}/oauth/token`;
     this.meUrl = `${this.baseUrl}/api/me`;
+  }
+
+  get logoutUrl(): string {
+    return `${this.baseUrl}/logout`;
+  }
+
+  /**
+   * Development memakai SSO http-only (mis. http://localhost:8000).
+   * Jika env keliru berisi https, paksa turun ke http agar logout/login
+   * tidak lari ke https di development. Produksi dibiarkan sesuai konfigurasi.
+   */
+  private devHttp(url: string): string {
+    if (process.env.NODE_ENV === 'production') return url;
+    return url.replace(/^https:\/\//i, 'http://');
   }
 
   /**

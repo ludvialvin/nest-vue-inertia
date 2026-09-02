@@ -28,6 +28,10 @@ async function bootstrap() {
   const port = Number(config.get('PORT', '3000'));
   const appUrl = config.get<string>('APP_URL', 'http://localhost:3000');
   const frontendUrl = config.get<string>('FRONTEND_URL', '');
+  const ssoBaseUrl = config.get<string>(
+    'SSO_BASE_URL',
+    'http://localhost:8000',
+  );
 
   app.enableShutdownHooks();
   app.set('trust proxy', parseTrustProxy(config.get('TRUST_PROXY', 'false')));
@@ -43,7 +47,13 @@ async function bootstrap() {
       referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
       strictTransportSecurity: isProd ? undefined : false,
       contentSecurityPolicy: {
-        directives: buildCspDirectives({ isProd, frontendUrl }),
+        useDefaults: false,
+        directives: buildCspDirectives({
+          isProd,
+          frontendUrl,
+          appUrlHttps: appUrl.startsWith('https://'),
+          ssoOrigin: toOriginPair(ssoBaseUrl),
+        }),
       },
     }),
   );
@@ -78,18 +88,34 @@ async function bootstrap() {
 
 type CspDirectives = Record<string, Iterable<string>>;
 
+type SsoOrigin = { http: string; https: string };
+
+function toOriginPair(baseUrl: string): SsoOrigin {
+  const origin = new URL(baseUrl).origin;
+  return {
+    http: origin.replace(/^https?/, 'http'),
+    https: origin.replace(/^https?/, 'https'),
+  };
+}
+
 function buildCspDirectives({
   isProd,
   frontendUrl,
+  appUrlHttps,
+  ssoOrigin,
 }: {
   isProd: boolean;
   frontendUrl: string;
+  appUrlHttps: boolean;
+  ssoOrigin: SsoOrigin;
 }): CspDirectives {
   const devSources = isProd
     ? []
     : frontendUrl
       ? [frontendUrl, frontendUrl.replace(/^http/, 'ws')]
       : [];
+
+  const ssoSources = [ssoOrigin.http, ssoOrigin.https];
 
   return {
     defaultSrc: ["'self'"],
@@ -103,6 +129,7 @@ function buildCspDirectives({
             ...(frontendUrl ? [frontendUrl] : []),
           ]),
     ],
+    scriptSrcAttr: ["'none'"],
     styleSrc: [
       "'self'",
       "'unsafe-inline'",
@@ -111,12 +138,18 @@ function buildCspDirectives({
     ],
     imgSrc: ["'self'", 'data:'],
     fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
-    connectSrc: ["'self'", 'data:', ...devSources],
+    connectSrc: [
+      "'self'",
+      'data:',
+      'https://api.iconify.design',
+      ...ssoSources,
+      ...devSources,
+    ],
     objectSrc: ["'none'"],
     baseUri: ["'self'"],
     formAction: ["'self'"],
     frameAncestors: ["'none'"],
-    ...(isProd ? { upgradeInsecureRequests: [] } : {}),
+    ...(appUrlHttps ? { upgradeInsecureRequests: [] } : {}),
   };
 }
 

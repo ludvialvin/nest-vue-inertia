@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import '@nuxt/ui';
 
 @theme {
   --font-sans:
@@ -24,12 +25,6 @@
   --color-accent-600: #0891b2;
 }
 
-@layer base {
-  html {
-    @apply antialiased;
-  }
-
-  body {
-    @apply bg-slate-50 font-sans text-slate-900;
-  }
+:root {
+  --ui-container: 95%; /* Changes the default maximum width */
 }
