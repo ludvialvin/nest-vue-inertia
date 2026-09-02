@@ -1,5 +1,6 @@
 import { createInertiaApp } from '@inertiajs/vue3';
 import { createApp, h, type DefineComponent } from 'vue';
+import { createPinia } from 'pinia';
 import ui from '@nuxt/ui/vue-plugin';
 import AppLayout from './Layouts/AppLayout.vue';
 import './style.css';
@@ -30,6 +31,7 @@ createInertiaApp({
     createApp({ render: () => h(App, props) })
       .use(plugin)
       .use(ui)
+      .use(createPinia())
       .mount(el);
   },
 });
